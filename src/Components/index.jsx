@@ -12,7 +12,7 @@ const TaskManager = () => {
     const [editId, setEditId] = useState(null);
     const [selected, setSelected] = useState({});
 
-    // Load tasks on component mount
+
     useEffect(() => {
         fetch(API_URL)
             .then(res => res.json())
@@ -20,20 +20,19 @@ const TaskManager = () => {
             .catch(() => showToast('Failed to load tasks', 'warning'));
     }, []);
 
-    // Show toast helper (auto hide after 3 seconds)
     const showToast = (message, type = 'success') => {
         setToast({ message, type, visible: true });
         setTimeout(() => setToast(t => ({ ...t, visible: false })), 3000);
     };
 
-    // Add or update a task
+
     const saveTask = async () => {
         const text = taskInput.trim();
         if (!text) return alert('Please enter a task.');
 
         try {
             if (editId) {
-                // Update task
+        
                 const res = await fetch(`${API_URL}/${editId}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
@@ -45,7 +44,7 @@ const TaskManager = () => {
                 setEditId(null);
                 showToast('Task updated');
             } else {
-                // Add new task
+
                 const res = await fetch(API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -62,17 +61,15 @@ const TaskManager = () => {
         }
     };
 
-    // Delete a task (with undo option)
+
     const deleteTask = async (id) => {
         const taskToDelete = tasks.find(t => t.id === id);
         if (!taskToDelete) return;
 
-        // Remove task locally immediately
         setTasks(tasks.filter(t => t.id !== id));
         setDeletedTask(taskToDelete);
         showToast('Task deleted. Undo available for 5 seconds', 'warning');
 
-        // Call backend delete
         try {
             const res = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
             if (!res.ok) throw new Error('Delete failed');
@@ -80,12 +77,11 @@ const TaskManager = () => {
             showToast('Delete failed', 'warning');
         }
 
-        // Set undo timer
         if (undoTimer) clearTimeout(undoTimer);
         setUndoTimer(setTimeout(() => setDeletedTask(null), 5000));
     };
 
-    // Undo delete by re-adding the deleted task
+
     const undoDelete = async () => {
         if (!deletedTask) return;
         try {
@@ -105,13 +101,12 @@ const TaskManager = () => {
         }
     };
 
-    // Start editing a task
     const startEdit = (task) => {
         setTaskInput(task.text);
         setEditId(task.id);
     };
 
-    // Toggle task selection for mass delete
+
     const toggleSelect = (id) => {
         setSelected(prev => {
             const copy = { ...prev };
@@ -124,13 +119,13 @@ const TaskManager = () => {
         });
     };
 
-    // Mass delete selected tasks
+
     const massDelete = async () => {
         const ids = Object.keys(selected).map(Number);
         if (ids.length < 1) return;
         if (ids.length > 1 && !window.confirm(`Delete ${ids.length} tasks?`)) return;
 
-        // Remove selected tasks locally
+    
         setTasks(tasks.filter(t => !ids.includes(t.id)));
         setSelected({});
         if (editId && ids.includes(editId)) {
@@ -138,7 +133,7 @@ const TaskManager = () => {
             setTaskInput('');
         }
 
-        // Call backend delete for each
+
         try {
             await Promise.all(ids.map(id => fetch(`${API_URL}/${id}`, { method: 'DELETE' })));
             showToast(`${ids.length} task(s) deleted`, 'warning');

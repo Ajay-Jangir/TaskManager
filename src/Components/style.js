@@ -4,7 +4,7 @@ const Wrapper = styled.div`
 .container{ 
     height: 100vh;
     width: 100vw;
-    overflow-x : hidden; /* Prevent page scroll */
+    overflow-x : hidden; 
     background-color:lightgreen;
 }
 
