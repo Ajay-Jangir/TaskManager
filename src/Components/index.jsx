@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Wrapper from './style';
 
-const API_URL = 'http://localhost:5000/tasks';
+const API_URL = import.meta.env.VITE_API_URL;
 
 const TaskManager = () => {
     const [taskInput, setTaskInput] = useState('');
@@ -32,7 +32,7 @@ const TaskManager = () => {
 
         try {
             if (editId) {
-        
+
                 const res = await fetch(`${API_URL}/${editId}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
@@ -125,7 +125,7 @@ const TaskManager = () => {
         if (ids.length < 1) return;
         if (ids.length > 1 && !window.confirm(`Delete ${ids.length} tasks?`)) return;
 
-    
+
         setTasks(tasks.filter(t => !ids.includes(t.id)));
         setSelected({});
         if (editId && ids.includes(editId)) {

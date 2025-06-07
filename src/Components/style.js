@@ -4,7 +4,7 @@ const Wrapper = styled.div`
 .container{ 
     height: 100vh;
     width: 100vw;
-    overflow-x : hidden; 
+    overflow : hidden;
     background-color:lightgreen;
 }
 
