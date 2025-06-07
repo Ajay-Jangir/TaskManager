@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Wrapper from './style';
 
-const API_URL = import.meta.env.VITE_API_URL;
-
+const API_URL = import.meta.env.VITE_API_URL; // should be: https://taskmanager-backend-dsfw.onrender.com
 const TaskManager = () => {
     const [taskInput, setTaskInput] = useState('');
     const [tasks, setTasks] = useState([]);
@@ -11,13 +10,19 @@ const TaskManager = () => {
     const [undoTimer, setUndoTimer] = useState(null);
     const [editId, setEditId] = useState(null);
     const [selected, setSelected] = useState({});
-
+    const [loading, setLoading] = useState(true); // optional loader
 
     useEffect(() => {
-        fetch(API_URL)
+        fetch(`${API_URL}/tasks`)
             .then(res => res.json())
-            .then(setTasks)
-            .catch(() => showToast('Failed to load tasks', 'warning'));
+            .then(data => {
+                setTasks(data);
+                setLoading(false);
+            })
+            .catch(() => {
+                showToast('Failed to load tasks', 'warning');
+                setLoading(false);
+            });
     }, []);
 
     const showToast = (message, type = 'success') => {
@@ -25,15 +30,13 @@ const TaskManager = () => {
         setTimeout(() => setToast(t => ({ ...t, visible: false })), 3000);
     };
 
-
     const saveTask = async () => {
         const text = taskInput.trim();
         if (!text) return alert('Please enter a task.');
 
         try {
             if (editId) {
-
-                const res = await fetch(`${API_URL}/${editId}`, {
+                const res = await fetch(`${API_URL}/tasks/${editId}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ text }),
@@ -44,8 +47,7 @@ const TaskManager = () => {
                 setEditId(null);
                 showToast('Task updated');
             } else {
-
-                const res = await fetch(API_URL, {
+                const res = await fetch(`${API_URL}/tasks`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ text }),
@@ -61,7 +63,6 @@ const TaskManager = () => {
         }
     };
 
-
     const deleteTask = async (id) => {
         const taskToDelete = tasks.find(t => t.id === id);
         if (!taskToDelete) return;
@@ -71,7 +72,7 @@ const TaskManager = () => {
         showToast('Task deleted. Undo available for 5 seconds', 'warning');
 
         try {
-            const res = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+            const res = await fetch(`${API_URL}/tasks/${id}`, { method: 'DELETE' });
             if (!res.ok) throw new Error('Delete failed');
         } catch {
             showToast('Delete failed', 'warning');
@@ -81,11 +82,10 @@ const TaskManager = () => {
         setUndoTimer(setTimeout(() => setDeletedTask(null), 5000));
     };
 
-
     const undoDelete = async () => {
         if (!deletedTask) return;
         try {
-            const res = await fetch(API_URL, {
+            const res = await fetch(`${API_URL}/tasks`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ text: deletedTask.text }),
@@ -106,7 +106,6 @@ const TaskManager = () => {
         setEditId(task.id);
     };
 
-
     const toggleSelect = (id) => {
         setSelected(prev => {
             const copy = { ...prev };
@@ -119,12 +118,10 @@ const TaskManager = () => {
         });
     };
 
-
     const massDelete = async () => {
         const ids = Object.keys(selected).map(Number);
         if (ids.length < 1) return;
         if (ids.length > 1 && !window.confirm(`Delete ${ids.length} tasks?`)) return;
-
 
         setTasks(tasks.filter(t => !ids.includes(t.id)));
         setSelected({});
@@ -133,9 +130,8 @@ const TaskManager = () => {
             setTaskInput('');
         }
 
-
         try {
-            await Promise.all(ids.map(id => fetch(`${API_URL}/${id}`, { method: 'DELETE' })));
+            await Promise.all(ids.map(id => fetch(`${API_URL}/tasks/${id}`, { method: 'DELETE' })));
             showToast(`${ids.length} task(s) deleted`, 'warning');
         } catch {
             showToast('Failed to delete tasks', 'warning');
@@ -168,27 +164,31 @@ const TaskManager = () => {
                         </button>
                     )}
 
-                    <ul className="task-list">
-                        {tasks.map(task => (
-                            <li key={task.id} className="task-item">
-                                <input
-                                    type="checkbox"
-                                    checked={!!selected[task.id]}
-                                    onChange={() => toggleSelect(task.id)}
-                                    style={{ marginRight: '10px' }}
-                                />
-                                <span style={{ flex: 1 }}>{task.text}</span>
-                                <div style={{ display: 'flex', gap: '10px' }}>
-                                    <button onClick={() => startEdit(task)} className="add-button" style={{ backgroundColor: '#ffc107' }}>
-                                        Edit
-                                    </button>
-                                    <button onClick={() => deleteTask(task.id)} className="delete-button">
-                                        Delete
-                                    </button>
-                                </div>
-                            </li>
-                        ))}
-                    </ul>
+                    {loading ? (
+                        <p>Loading tasks...</p>
+                    ) : (
+                        <ul className="task-list">
+                            {tasks.map(task => (
+                                <li key={task.id} className="task-item">
+                                    <input
+                                        type="checkbox"
+                                        checked={!!selected[task.id]}
+                                        onChange={() => toggleSelect(task.id)}
+                                        style={{ marginRight: '10px' }}
+                                    />
+                                    <span style={{ flex: 1 }}>{task.text}</span>
+                                    <div style={{ display: 'flex', gap: '10px' }}>
+                                        <button onClick={() => startEdit(task)} className="add-button" style={{ backgroundColor: '#ffc107' }}>
+                                            Edit
+                                        </button>
+                                        <button onClick={() => deleteTask(task.id)} className="delete-button">
+                                            Delete
+                                        </button>
+                                    </div>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
 
                     {deletedTask && (
                         <div className="undo-container">
