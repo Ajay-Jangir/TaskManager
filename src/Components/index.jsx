@@ -157,44 +157,44 @@ const TaskManager = () => {
                             {editId ? 'Update Task' : 'Add Task'}
                         </button>
                     </div>
+                    <div className='task-list'>
+                        {selectedCount > 1 && (
+                            <button onClick={massDelete} className="delete-button" style={{ marginBottom: '12px' }}>
+                                Delete Selected ({selectedCount})
+                            </button>
+                        )}
+                        {loading ? (
+                            <p>Loading tasks...</p>
+                        ) : (
+                            <ul className="task-list">
+                                {tasks.map(task => (
+                                    <li key={task.id} className="task-item">
+                                        <input
+                                            type="checkbox"
+                                            checked={!!selected[task.id]}
+                                            onChange={() => toggleSelect(task.id)}
+                                            style={{ marginRight: '10px' }}
+                                        />
+                                        <span style={{ flex: 1 }}>{task.text}</span>
+                                        <div style={{ display: 'flex', gap: '10px' }}>
+                                            <button onClick={() => startEdit(task)} className="add-button" style={{ backgroundColor: '#ffc107' }}>
+                                                Edit
+                                            </button>
+                                            <button onClick={() => deleteTask(task.id)} className="delete-button">
+                                                Delete
+                                            </button>
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
 
-                    {selectedCount > 1 && (
-                        <button onClick={massDelete} className="delete-button" style={{ marginBottom: '12px' }}>
-                            Delete Selected ({selectedCount})
-                        </button>
-                    )}
-
-                    {loading ? (
-                        <p>Loading tasks...</p>
-                    ) : (
-                        <ul className="task-list">
-                            {tasks.map(task => (
-                                <li key={task.id} className="task-item">
-                                    <input
-                                        type="checkbox"
-                                        checked={!!selected[task.id]}
-                                        onChange={() => toggleSelect(task.id)}
-                                        style={{ marginRight: '10px' }}
-                                    />
-                                    <span style={{ flex: 1 }}>{task.text}</span>
-                                    <div style={{ display: 'flex', gap: '10px' }}>
-                                        <button onClick={() => startEdit(task)} className="add-button" style={{ backgroundColor: '#ffc107' }}>
-                                            Edit
-                                        </button>
-                                        <button onClick={() => deleteTask(task.id)} className="delete-button">
-                                            Delete
-                                        </button>
-                                    </div>
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-
-                    {deletedTask && (
-                        <div className="undo-container">
-                            <button onClick={undoDelete} className="undo-button">Undo Delete</button>
-                        </div>
-                    )}
+                        {deletedTask && (
+                            <div className="undo-container">
+                                <button onClick={undoDelete} className="undo-button">Undo Delete</button>
+                            </div>
+                        )}
+                    </div>
 
                     {toast.visible && (
                         <div className={`toast ${toast.type}`}>

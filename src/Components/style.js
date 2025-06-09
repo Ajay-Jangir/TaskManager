@@ -6,13 +6,13 @@ const Wrapper = styled.div`
     width: 100vw;
     overflow : hidden;
     background-color:lightgreen;
+    
 }
 
   .task-container {
     width: 100%;
     max-width: 500px;
     max-height: 80vh;
-    overflow-y: auto;
     background-color:lightseagreen;
     border-radius: 12px;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.07);
@@ -32,6 +32,10 @@ const Wrapper = styled.div`
   line-height: 1.4;
   margin-bottom: 24px;
   text-align: center;
+}
+
+.task-list{
+  overflow-y : auto;
 }
 
 
